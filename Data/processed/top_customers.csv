@@ -1,0 +1,11 @@
+customer_id,name,region,total_spend,latest_order_date,churned
+C001,Aarav Sharma,North,96000.0,2024-06-25,True
+C058,Veena Singh,South,91000.0,2024-02-18,True
+C018,Ritu Aggarwal,North,90000.0,2023-05-03,True
+C074,Indira Bose,South,88000.0,2024-10-06,False
+C042,Anita Singh,South,85000.0,2023-10-10,True
+C066,Padma Shah,Unknown,80000.0,2024-04-15,True
+C050,Geetha Shah,South,77000.0,2023-03-12,True
+C034,Bhavna Shah,South,72000.0,2023-08-18,True
+C026,Swati Singh,North,68000.0,2023-06-28,True
+C020,Meera Nair,East,35250.0,2024-08-07,False

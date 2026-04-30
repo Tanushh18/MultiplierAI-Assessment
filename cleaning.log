@@ -1,0 +1,24 @@
+2026-04-30 12:59:46,644 [INFO] ─── Starting customers cleaning ───
+2026-04-30 12:59:46,646 [INFO] Loaded 'data/raw/customers.csv' — 77 rows, 5 columns
+2026-04-30 12:59:46,654 [INFO] Duplicates removed (customer_id): 2
+2026-04-30 12:59:46,655 [INFO] Invalid emails found: 5
+2026-04-30 12:59:46,658 [INFO] Saved cleaned customers → 'data/processed/customers_clean.csv'
+2026-04-30 12:59:46,659 [INFO] ─── Starting orders cleaning ───
+2026-04-30 12:59:46,661 [INFO] Loaded 'data/raw/orders.csv' — 80 rows, 6 columns
+2026-04-30 12:59:46,670 [INFO] Rows removed (both order_id & customer_id null): 0
+2026-04-30 12:59:46,671 [INFO] Product medians used for imputation:
+2026-04-30 12:59:46,671 [INFO]   Headphones: 4000.0
+2026-04-30 12:59:46,671 [INFO]   Keyboard: 2900.0
+2026-04-30 12:59:46,671 [INFO]   Laptop: 80000.0
+2026-04-30 12:59:46,671 [INFO]   Monitor: 25500.0
+2026-04-30 12:59:46,671 [INFO]   Mouse: 1400.0
+2026-04-30 12:59:46,671 [INFO]   Smartphone: 27500.0
+2026-04-30 12:59:46,671 [INFO]   Smartwatch: 13750.0
+2026-04-30 12:59:46,671 [INFO]   Tablet: 18250.0
+2026-04-30 12:59:46,672 [INFO] Status distribution after normalisation:
+status
+completed    51
+pending      12
+cancelled    11
+refunded      6
+2026-04-30 12:59:46,674 [INFO] Saved cleaned orders → 'data/processed/orders_clean.csv'

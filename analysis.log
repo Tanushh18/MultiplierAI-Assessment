@@ -1,0 +1,11 @@
+2026-04-30 13:02:36,112 [INFO] Loaded 'data/processed/orders_clean.csv' — 80 rows
+2026-04-30 13:02:36,113 [INFO] Loaded 'data/processed/customers_clean.csv' — 75 rows
+2026-04-30 13:02:36,113 [INFO] Loaded 'data/raw/products.csv' — 8 rows
+2026-04-30 13:02:36,113 [INFO] ─── Merging datasets ───
+2026-04-30 13:02:36,119 [INFO] Orders without a matching customer: 1
+2026-04-30 13:02:36,120 [INFO] Orders without a matching product: 0
+2026-04-30 13:02:36,124 [INFO] Monthly revenue saved → 'data/processed/monthly_revenue.csv' (20 rows)
+2026-04-30 13:02:36,127 [INFO] Churn reference date: 2024-10-06, cutoff (90 days back): 2024-07-08
+2026-04-30 13:02:36,133 [INFO] Top customers saved → 'data/processed/top_customers.csv'
+2026-04-30 13:02:36,138 [INFO] Category performance saved → 'data/processed/category_performance.csv'
+2026-04-30 13:02:36,142 [INFO] Regional analysis saved → 'data/processed/regional_analysis.csv'

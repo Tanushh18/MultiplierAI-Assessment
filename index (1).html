@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Analytics Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    /* ── Reset & Variables ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #273549;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #6366f1;
+      --accent2: #22d3ee;
+      --green: #4ade80;
+      --red: #f87171;
+      --yellow: #facc15;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.4);
+      --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+    .logo h1 { font-size: 1.3rem; font-weight: 700; letter-spacing: -0.5px; }
+    .logo p { font-size: 0.75rem; color: var(--muted); }
+    .status-badge {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--surface2); border: 1px solid var(--border);
+      padding: 8px 14px; border-radius: 20px; font-size: 0.8rem;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    /* ── Main Layout ── */
+    main { padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+
+    /* ── Section Titles ── */
+    .section-title {
+      font-size: 1.1rem; font-weight: 600; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px; color: var(--text);
+    }
+    .section-title .icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: rgba(99,102,241,0.2); display: flex;
+      align-items: center; justify-content: center; font-size: 16px;
+    }
+    .section { margin-bottom: 36px; }
+
+    /* ── KPI Cards ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px; margin-bottom: 36px;
+    }
+    .kpi-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+      position: relative; overflow: hidden;
+    }
+    .kpi-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+    }
+    .kpi-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+    .kpi-value { font-size: 1.8rem; font-weight: 700; line-height: 1; }
+    .kpi-sub { font-size: 0.75rem; color: var(--muted); margin-top: 6px; }
+
+    /* ── Charts Grid ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px; margin-bottom: 36px;
+    }
+    .chart-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 24px;
+    }
+    .chart-title { font-size: 0.9rem; font-weight: 600; margin-bottom: 16px; color: var(--muted); }
+    .chart-wrap { position: relative; }
+
+    /* ── Tables ── */
+    .table-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden;
+    }
+    .table-header {
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .table-header h3 { font-size: 0.9rem; font-weight: 600; }
+    .sort-hint { font-size: 0.75rem; color: var(--muted); }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    thead th {
+      padding: 10px 16px; text-align: left;
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.6px;
+      color: var(--muted); background: var(--surface2);
+      cursor: pointer; user-select: none; white-space: nowrap;
+    }
+    thead th:hover { color: var(--text); }
+    thead th .sort-arrow { margin-left: 4px; opacity: 0.5; }
+    thead th.active .sort-arrow { opacity: 1; color: var(--accent2); }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.15s; }
+    tbody tr:hover { background: var(--surface2); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody td { padding: 12px 16px; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600;
+    }
+    .badge.churned { background: rgba(248,113,113,0.15); color: var(--red); border: 1px solid rgba(248,113,113,0.3); }
+    .badge.active { background: rgba(74,222,128,0.15); color: var(--green); border: 1px solid rgba(74,222,128,0.3); }
+
+    /* ── Region Cards ── */
+    .region-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;
+    }
+    .region-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+    }
+    .region-name { font-weight: 700; font-size: 1rem; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .region-flag { font-size: 1.3rem; }
+    .region-stat { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.83rem; }
+    .region-stat:last-child { border-bottom: none; }
+    .region-stat span:first-child { color: var(--muted); }
+    .region-stat span:last-child { font-weight: 600; }
+
+    /* ── Loading & Error ── */
+    .state-box {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 60px 20px; gap: 12px;
+      color: var(--muted); font-size: 0.9rem;
+    }
+    .spinner {
+      width: 32px; height: 32px; border: 3px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-box {
+      background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3);
+      border-radius: var(--radius); padding: 20px; color: var(--red); font-size: 0.85rem;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      header { padding: 16px 20px; }
+      main { padding: 20px 16px; }
+      .charts-grid { grid-template-columns: 1fr; }
+      .kpi-value { font-size: 1.4rem; }
+    }
+    @media (max-width: 480px) {
+      .logo p { display: none; }
+      .status-badge span { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">📊</div>
+    <div>
+      <h1>Analytics Dashboard</h1>
+      <p>Sales & Customer Intelligence</p>
+    </div>
+  </div>
+  <div class="status-badge">
+    <div class="dot"></div>
+    <span>Live Data</span>
+  </div>
+</header>
+
+<!-- ── Main ── -->
+<main>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid" id="kpi-grid">
+    <div class="kpi-card"><div class="kpi-label">Total Revenue</div><div class="kpi-value" id="kpi-revenue">—</div><div class="kpi-sub">Completed orders</div></div>
+    <div class="kpi-card"><div class="kpi-label">Total Orders</div><div class="kpi-value" id="kpi-orders">—</div><div class="kpi-sub">All statuses</div></div>
+    <div class="kpi-card"><div class="kpi-label">Top Customer Spend</div><div class="kpi-value" id="kpi-top-spend">—</div><div class="kpi-sub">Highest single customer</div></div>
+    <div class="kpi-card"><div class="kpi-label">Churned (Top 10)</div><div class="kpi-value" id="kpi-churn">—</div><div class="kpi-sub">No orders in 90 days</div></div>
+  </div>
+
+  <!-- Revenue Trend + Category Pie -->
+  <div class="section">
+    <div class="section-title"><div class="icon">📈</div> Revenue & Category Overview</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">Monthly Revenue Trend (Completed Orders)</div>
+        <div class="chart-wrap" id="revenue-wrap">
+          <div class="state-box"><div class="spinner"></div><span>Loading revenue data…</span></div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Revenue by Category</div>
+        <div class="chart-wrap" id="category-wrap">
+          <div class="state-box"><div class="spinner"></div><span>Loading…</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Customers Table -->
+  <div class="section">
+    <div class="section-title"><div class="icon">🧑</div> Top 10 Customers by Spend</div>
+    <div class="table-card" id="customers-wrap">
+      <div class="state-box"><div class="spinner"></div><span>Loading customers…</span></div>
+    </div>
+  </div>
+
+  <!-- Category Bar Chart -->
+  <div class="section">
+    <div class="section-title"><div class="icon">📦</div> Category Performance</div>
+    <div class="chart-card" id="catbar-wrap">
+      <div class="state-box"><div class="spinner"></div><span>Loading…</span></div>
+    </div>
+  </div>
+
+  <!-- Regional Analysis -->
+  <div class="section">
+    <div class="section-title"><div class="icon">🌍</div> Regional Analysis</div>
+    <div class="region-grid" id="regions-wrap">
+      <div class="state-box"><div class="spinner"></div><span>Loading regions…</span></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const API = 'http://localhost:8000';
+const fmt = (n) => n == null ? '—' : '₹' + Number(n).toLocaleString('en-IN', {maximumFractionDigits: 0});
+const fmtN = (n) => n == null ? '—' : Number(n).toLocaleString('en-IN');
+const COLORS = ['#6366f1','#22d3ee','#4ade80','#facc15','#f87171','#a78bfa','#34d399','#fb923c'];
+
+// ── Fetch helper ─────────────────────────────────────────────────────────────
+async function fetchAPI(endpoint) {
+  const res = await fetch(API + endpoint);
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+  const json = await res.json();
+  return json.data;
+}
+
+function errBox(msg) {
+  return `<div class="error-box">⚠️ ${msg} — make sure the FastAPI server is running on port 8000.</div>`;
+}
+
+// ── Revenue Chart ─────────────────────────────────────────────────────────────
+async function loadRevenue() {
+  const wrap = document.getElementById('revenue-wrap');
+  try {
+    const data = await fetchAPI('/api/revenue');
+    const labels = data.map(d => d.order_year_month);
+    const values = data.map(d => d.total_revenue);
+
+    // KPI total
+    const total = values.reduce((a, b) => a + b, 0);
+    document.getElementById('kpi-revenue').textContent = '₹' + (total/100000).toFixed(1) + 'L';
+    document.getElementById('kpi-orders').textContent = data.length + ' mo';
+
+    wrap.innerHTML = '<canvas id="revenueChart" height="160"></canvas>';
+    new Chart(document.getElementById('revenueChart'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Revenue (₹)',
+          data: values,
+          borderColor: '#6366f1',
+          backgroundColor: 'rgba(99,102,241,0.12)',
+          pointBackgroundColor: '#6366f1',
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.4,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => '₹' + ctx.parsed.y.toLocaleString('en-IN')
+            }
+          }
+        },
+        scales: {
+          x: { ticks: { color: '#94a3b8', maxRotation: 45 }, grid: { color: '#1e293b' } },
+          y: { ticks: { color: '#94a3b8', callback: v => '₹' + (v/1000) + 'k' }, grid: { color: '#334155' } }
+        }
+      }
+    });
+  } catch(e) {
+    wrap.innerHTML = errBox(e.message);
+  }
+}
+
+// ── Category Pie ──────────────────────────────────────────────────────────────
+async function loadCategoryPie() {
+  const wrap = document.getElementById('category-wrap');
+  try {
+    const data = await fetchAPI('/api/categories');
+    wrap.innerHTML = '<canvas id="catPie" height="200"></canvas>';
+    new Chart(document.getElementById('catPie'), {
+      type: 'doughnut',
+      data: {
+        labels: data.map(d => d.category),
+        datasets: [{
+          data: data.map(d => d.total_revenue),
+          backgroundColor: COLORS,
+          borderColor: '#1e293b',
+          borderWidth: 2,
+          hoverOffset: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 14, boxWidth: 12 } },
+          tooltip: {
+            callbacks: { label: ctx => ctx.label + ': ₹' + ctx.raw.toLocaleString('en-IN') }
+          }
+        }
+      }
+    });
+  } catch(e) {
+    wrap.innerHTML = errBox(e.message);
+  }
+}
+
+// ── Category Bar Chart ────────────────────────────────────────────────────────
+async function loadCategoryBar() {
+  const wrap = document.getElementById('catbar-wrap');
+  try {
+    const data = await fetchAPI('/api/categories');
+    wrap.innerHTML = '<div class="chart-title">Orders & Avg Order Value by Category</div><canvas id="catBar" height="120"></canvas>';
+    new Chart(document.getElementById('catBar'), {
+      type: 'bar',
+      data: {
+        labels: data.map(d => d.category),
+        datasets: [
+          {
+            label: 'Number of Orders',
+            data: data.map(d => d.number_of_orders),
+            backgroundColor: COLORS.map(c => c + 'cc'),
+            borderRadius: 6,
+            yAxisID: 'y',
+          },
+          {
+            label: 'Avg Order Value (₹)',
+            data: data.map(d => d.average_order_value),
+            type: 'line',
+            borderColor: '#facc15',
+            backgroundColor: 'transparent',
+            pointBackgroundColor: '#facc15',
+            pointRadius: 5,
+            tension: 0.3,
+            yAxisID: 'y2',
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { labels: { color: '#94a3b8' } },
+          tooltip: { mode: 'index', intersect: false }
+        },
+        scales: {
+          x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+          y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' }, title: { display: true, text: 'Orders', color: '#94a3b8' } },
+          y2: { position: 'right', ticks: { color: '#facc15', callback: v => '₹' + v.toLocaleString('en-IN') }, grid: { display: false }, title: { display: true, text: 'Avg Value (₹)', color: '#facc15' } }
+        }
+      }
+    });
+  } catch(e) {
+    wrap.innerHTML = errBox(e.message);
+  }
+}
+
+// ── Top Customers Table (sortable) ────────────────────────────────────────────
+let customersData = [];
+let sortCol = 'total_spend';
+let sortDir = -1;
+
+function renderCustomersTable() {
+  const sorted = [...customersData].sort((a, b) => {
+    const av = a[sortCol], bv = b[sortCol];
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    return (av < bv ? -1 : av > bv ? 1 : 0) * sortDir;
+  });
+
+  const cols = [
+    { key: 'name', label: 'Customer Name' },
+    { key: 'region', label: 'Region' },
+    { key: 'total_spend', label: 'Total Spend', render: v => fmt(v) },
+    { key: 'latest_order_date', label: 'Last Order' },
+    { key: 'churned', label: 'Status', render: v => v
+      ? '<span class="badge churned">⚠ Churned</span>'
+      : '<span class="badge active">✓ Active</span>' },
+  ];
+
+  const arrow = (col) => {
+    if (col !== sortCol) return '<span class="sort-arrow">↕</span>';
+    return `<span class="sort-arrow">${sortDir === 1 ? '↑' : '↓'}</span>`;
+  };
+
+  const html = `
+    <div class="table-header">
+      <h3>Top 10 Customers</h3>
+      <span class="sort-hint">Click column headers to sort</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            ${cols.map(c => `<th class="${c.key === sortCol ? 'active' : ''}" onclick="sortTable('${c.key}')">${c.label}${arrow(c.key)}</th>`).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${sorted.map(row => `
+            <tr>
+              ${cols.map(c => `<td>${c.render ? c.render(row[c.key]) : (row[c.key] ?? '—')}</td>`).join('')}
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  document.getElementById('customers-wrap').innerHTML = html;
+}
+
+window.sortTable = function(col) {
+  if (sortCol === col) sortDir *= -1;
+  else { sortCol = col; sortDir = -1; }
+  renderCustomersTable();
+};
+
+async function loadCustomers() {
+  const wrap = document.getElementById('customers-wrap');
+  try {
+    customersData = await fetchAPI('/api/top-customers');
+
+    // KPIs
+    const topSpend = Math.max(...customersData.map(d => d.total_spend || 0));
+    const churned = customersData.filter(d => d.churned).length;
+    document.getElementById('kpi-top-spend').textContent = fmt(topSpend);
+    document.getElementById('kpi-churn').textContent = churned + ' / ' + customersData.length;
+
+    renderCustomersTable();
+  } catch(e) {
+    wrap.innerHTML = errBox(e.message);
+  }
+}
+
+// ── Regional Cards ────────────────────────────────────────────────────────────
+const REGION_ICONS = { North: '🌐', South: '☀️', East: '🌅', West: '🌊', Unknown: '❓' };
+
+async function loadRegions() {
+  const wrap = document.getElementById('regions-wrap');
+  try {
+    const data = await fetchAPI('/api/regions');
+    wrap.innerHTML = data.map(r => `
+      <div class="region-card">
+        <div class="region-name">
+          <span class="region-flag">${REGION_ICONS[r.region] || '📍'}</span>
+          ${r.region}
+        </div>
+        <div class="region-stat"><span>Customers</span><span>${fmtN(r.num_customers)}</span></div>
+        <div class="region-stat"><span>Orders</span><span>${fmtN(r.num_orders)}</span></div>
+        <div class="region-stat"><span>Total Revenue</span><span>${fmt(r.total_revenue)}</span></div>
+        <div class="region-stat"><span>Avg per Customer</span><span>${fmt(r.avg_revenue_per_customer)}</span></div>
+      </div>
+    `).join('');
+  } catch(e) {
+    wrap.innerHTML = errBox(e.message);
+  }
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+(async function() {
+  await Promise.allSettled([
+    loadRevenue(),
+    loadCategoryPie(),
+    loadCategoryBar(),
+    loadCustomers(),
+    loadRegions(),
+  ]);
+})();
+</script>
+</body>
+</html>
