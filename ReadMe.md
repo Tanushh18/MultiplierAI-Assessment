@@ -31,12 +31,25 @@
 
 This project implements a **3-stage data pipeline** that transforms raw transactional CSV data into actionable business intelligence, exposed via a REST API and visualized in a browser-based dashboard.
 
+## Visual Preview
+
+### Dashboard
+![Dashboard](Images/1.png)
+
+### Revenue Chart
+![Revenue](Images/2.png)
+
+### Top Customers Table
+![Top Customers](Images/3.png)
+
+### Regional Analysis
+![Regions](Images/4.png)
+
 | Stage | Script | Input | Output |
 |-------|--------|-------|--------|
 | 1 — Cleaning | `clean_data.py` | `data/raw/*.csv` | `data/processed/*_clean.csv` |
 | 2 — Analysis | `analyze.py` | `data/processed/*_clean.csv` | `data/processed/*_metrics.csv` |
 | 3 — Serving | `backend/main.py` | `data/processed/*.csv` | JSON via REST API |
-
 ---
 
 ## Pipeline Architecture
